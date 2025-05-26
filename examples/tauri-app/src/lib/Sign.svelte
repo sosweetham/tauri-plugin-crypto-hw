@@ -1,13 +1,13 @@
 <script>
-    import { signPayload } from "@auvo/tauri-plugin-crypto-hw-api";
-  
-    let payload = $state("")
-    let signature = $state("")
+import { signPayload } from "@auvo/tauri-plugin-crypto-hw-api";
 
-    async function sign() {
-      signature = await signPayload("default", payload);
-    }
-  </script>
+let payload = $state("");
+let signature = $state("");
+
+async function sign() {
+	signature = await signPayload("default", payload);
+}
+</script>
   
   <div>
     <div class="row">

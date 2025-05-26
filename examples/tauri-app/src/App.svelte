@@ -1,39 +1,47 @@
 <script>
-  // import Greet from './lib/Greet.svelte'
-  import { generate, exists, getPublicKey } from '@auvo/tauri-plugin-crypto-hw-api'
-  import Sign from './lib/Sign.svelte';
-  import Verify from './lib/Verify.svelte';
+// import Greet from './lib/Greet.svelte'
+import {
+	generate,
+	exists,
+	getPublicKey,
+} from "@auvo/tauri-plugin-crypto-hw-api";
+import Sign from "./lib/Sign.svelte";
+import Verify from "./lib/Verify.svelte";
 
+let genRes = $state("");
 
-  let genRes = $state('')
+// test functions
+async function _generate() {
+	generate("default")
+		.then((returnValue) => {
+			genRes = returnValue;
+		})
+		.catch((error) => {
+			genRes = error;
+		});
+}
 
-	// test functions 
-  async function _generate() {
-    generate("default").then((returnValue) => {
-      genRes = returnValue
-    }).catch((error) => {
-      genRes = error
-    })
-  }
-  
-  let existsRes = $state('')
-  async function _exists() {
-    exists("default").then((returnValue) => {
-      existsRes = `${returnValue}`
-    }).catch((error) => {
-      existsRes = error
-    })
-  }
+let existsRes = $state("");
+async function _exists() {
+	exists("default")
+		.then((returnValue) => {
+			existsRes = `${returnValue}`;
+		})
+		.catch((error) => {
+			existsRes = error;
+		});
+}
 
-
-  let pubKey = $state('')
-  async function _getPublicKey() {
-    getPublicKey("default").then((returnValue) => {
-      pubKey = returnValue
-    }).catch((error) => {
-      pubKey = error
-    })
-  }
+let pubKey = $state("");
+async function _getPublicKey() {
+	getPublicKey("default")
+		.then((returnValue) => {
+			pubKey = returnValue;
+		})
+		.catch((error) => {
+			pubKey = error;
+		});
+}
 </script>
 
 <main class="container">

@@ -37,12 +37,18 @@
     "build": "rollup -c",
     "prepublishOnly": "pnpm build",
     "pretest": "pnpm build",
-    "lint": "pnpm @biomejs/biome lint --write ./guest-js",
-    "check-lint": "pnpm @biomejs/biome lint ./guest-js",
-    "format": "pnpm @biomejs/biome format --write ./guest-js",
-    "check-format": "pnpm @biomejs/biome format ./guest-js",
-    "check": "pnpm @biomejs/biome check --write ./guest-js",
-    "check-types": "tsc --noEmit"
+    "lint": "pnpm biome lint --write ./guest-js",
+    "lint-all": "pnpm -F @auvo/* lint",
+    "check-lint-all": "pnpm -F @auvo/* check-lint",
+    "check-lint": "pnpm biome lint ./guest-js",
+    "format": "pnpm biome format --write ./guest-js",
+    "check-format": "pnpm biome format ./guest-js",
+    "format-all": "pnpm -F @auvo/* format",
+    "check-format-all": "pnpm -F @auvo/* check-format",
+    "check": "pnpm biome check --write ./guest-js",
+    "check-all": "pnpm -F @auvo/* check",
+    "check-types": "tsc --noEmit",
+    "check-types-all": "pnpm -F @auvo/* check-types"
   },
   "dependencies": {
     "@tauri-apps/api": ">=2.0.0-beta.6"

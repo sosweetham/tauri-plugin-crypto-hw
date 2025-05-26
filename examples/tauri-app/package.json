@@ -1,5 +1,5 @@
 {
-  "name": "tauri-app",
+  "name": "@auvo/tauri-app",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,11 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "lint": "npx @biomejs/biome lint --write ./src",
-    "check-lint": "npx @biomejs/biome lint ./src",
-    "format": "npx @biomejs/biome format --write ./src",
-    "check-format": "npx @biomejs/biome format ./src",
-    "check": "npx @biomejs/biome check --write ./src"
+    "lint": "pnpm biome lint --write ./src",
+    "check-lint": "pnpm biome lint ./src",
+    "format": "pnpm biome format --write ./src",
+    "check-format": "pnpm biome format ./src",
+    "check": "pnpm biome check --write ./src"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",

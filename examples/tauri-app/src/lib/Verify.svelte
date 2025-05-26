@@ -1,15 +1,15 @@
 <script>
-    import { verifySignature } from "@auvo/tauri-plugin-crypto-hw-api";
+import { verifySignature } from "@auvo/tauri-plugin-crypto-hw-api";
 
-    let payload = $state("");
-    let signature = $state("");
+let payload = $state("");
+let signature = $state("");
 
-    let result = $state(false);
+let result = $state(false);
 
-    async function verify() {
-        result = await verifySignature("default", payload, signature);
-        console.log("Result: ", result)
-    }
+async function verify() {
+	result = await verifySignature("default", payload, signature);
+	console.log("Result: ", result);
+}
 </script>
 
 <div>
