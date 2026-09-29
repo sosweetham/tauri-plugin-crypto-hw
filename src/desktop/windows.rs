@@ -63,7 +63,7 @@ pub(crate) fn seal<R: Runtime>(
             backing: Backing::Hardware,
         }),
         Keeper::Dpapi => Ok(SealResponse {
-            sealed: sealed::format(DPAPI_SCHEME, &protect(plaintext)?),
+            sealed: sealed::format(DPAPI_SCHEME, &protect(identifier, plaintext)?),
             backing: Backing::System,
         }),
     }
@@ -93,7 +93,7 @@ pub(crate) fn open<R: Runtime>(
             })
         }
         Rung::Dpapi => Ok(Opened {
-            plaintext: unprotect(&parsed.bytes)?,
+            plaintext: unprotect(identifier, &parsed.bytes)?,
             backing: Backing::System,
         }),
     }
@@ -292,17 +292,24 @@ fn oaep_sha256() -> BCRYPT_OAEP_PADDING_INFO {
     }
 }
 
-fn protect(plaintext: &[u8]) -> Result<Vec<u8>> {
+/// The identifier is mixed into the blob, so a secret kept under one name
+/// cannot be opened under another.
+fn protect(identifier: &str, plaintext: &[u8]) -> Result<Vec<u8>> {
     let input = CRYPT_INTEGER_BLOB {
         cbData: plaintext.len() as u32,
         pbData: plaintext.as_ptr() as *mut u8,
+    };
+    let salt = identifier.as_bytes();
+    let mut entropy = CRYPT_INTEGER_BLOB {
+        cbData: salt.len() as u32,
+        pbData: salt.as_ptr() as *mut u8,
     };
     let mut out = CRYPT_INTEGER_BLOB::default();
     unsafe {
         CryptProtectData(
             &input,
             PCWSTR::null(),
-            None,
+            Some(&mut entropy),
             None,
             None,
             CRYPTPROTECT_UI_FORBIDDEN,
@@ -316,17 +323,22 @@ fn protect(plaintext: &[u8]) -> Result<Vec<u8>> {
     Ok(written)
 }
 
-fn unprotect(ciphertext: &[u8]) -> Result<Zeroizing<Vec<u8>>> {
+fn unprotect(identifier: &str, ciphertext: &[u8]) -> Result<Zeroizing<Vec<u8>>> {
     let input = CRYPT_INTEGER_BLOB {
         cbData: ciphertext.len() as u32,
         pbData: ciphertext.as_ptr() as *mut u8,
+    };
+    let salt = identifier.as_bytes();
+    let mut entropy = CRYPT_INTEGER_BLOB {
+        cbData: salt.len() as u32,
+        pbData: salt.as_ptr() as *mut u8,
     };
     let mut out = CRYPT_INTEGER_BLOB::default();
     unsafe {
         CryptUnprotectData(
             &input,
             None,
-            None,
+            Some(&mut entropy),
             None,
             None,
             CRYPTPROTECT_UI_FORBIDDEN,
