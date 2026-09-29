@@ -7,6 +7,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.security.keystore.StrongBoxUnavailableException
+import android.util.Base64
 import androidx.annotation.RequiresApi
 import app.tauri.BuildConfig
 
@@ -182,7 +183,15 @@ class CryptoPlugin(private val activity: Activity): Plugin(activity) {
         }
     }
 
-    private fun sealAlias(id: String) = "${alias(id)}.seal"
+    /** The name this identifier seals under. An identifier is text a person
+     *  chose, so it is encoded rather than pasted: a suffix would let one
+     *  identifier name another identifier's entry. */
+    private fun sealAlias(id: String) =
+        "${BuildConfig.LIBRARY_PACKAGE_NAME}.seal." +
+            Base64.encodeToString(
+                id.toByteArray(Charsets.UTF_8),
+                Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP,
+            )
 
     private fun keyStore(): KeyStore = KeyStore.getInstance(KEYSTORE).apply { load(null) }
 
