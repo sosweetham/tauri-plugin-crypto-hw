@@ -52,7 +52,12 @@ mod tests {
 
     #[test]
     fn round_trips() {
-        for bytes in [vec![], vec![0u8], b"\xff\x00\xfe\x01hello".to_vec(), (0..=255u8).collect()] {
+        for bytes in [
+            vec![],
+            vec![0u8],
+            b"\xff\x00\xfe\x01hello".to_vec(),
+            (0..=255u8).collect(),
+        ] {
             let s = format("aes-gcm-software", &bytes);
             let back = parse(&s).expect("a string we just wrote parses");
             assert_eq!(back.scheme, "aes-gcm-software");

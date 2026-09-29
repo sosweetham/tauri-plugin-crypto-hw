@@ -58,10 +58,14 @@ impl<R: Runtime> Crypto<R> {
     }
 
     pub fn seal(&self, payload: SealRequest) -> crate::Result<SealResponse> {
-        self.0.run_mobile_plugin("seal", payload).map_err(Into::into)
+        self.0
+            .run_mobile_plugin("seal", payload)
+            .map_err(Into::into)
     }
     pub fn open(&self, payload: OpenRequest) -> crate::Result<OpenResponse> {
-        self.0.run_mobile_plugin("open", payload).map_err(Into::into)
+        self.0
+            .run_mobile_plugin("open", payload)
+            .map_err(Into::into)
     }
     pub fn delete(&self, payload: IdentifierRequest) -> crate::Result<DeleteResponse> {
         self.0
@@ -69,4 +73,3 @@ impl<R: Runtime> Crypto<R> {
             .map_err(Into::into)
     }
 }
-

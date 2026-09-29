@@ -21,7 +21,8 @@ const KEY_LEN: usize = 32;
 const NONCE_LEN: usize = 12;
 
 const NO_SECRET: &str = "There is no secret kept under that name on this device.";
-const DAMAGED_KEY: &str = "The key for that secret is damaged. Delete it and seal the secret again.";
+const DAMAGED_KEY: &str =
+    "The key for that secret is damaged. Delete it and seal the secret again.";
 const UNREADABLE: &str = "That secret could not be opened. Seal it again.";
 
 pub(crate) fn seal<R: Runtime>(
