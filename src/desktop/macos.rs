@@ -113,24 +113,22 @@ fn descend<T>(mut attempt: impl FnMut(Rung) -> Result<T>) -> Result<T> {
 
 /// Clears every rung, because a secret sealed on a low rung outlives a refusal
 /// from a high one: an app that cannot reach the Secure Enclave at all is
-/// exactly the app whose secret is on the keychain rung below it. Nothing being
-/// there is success, so only a refusal from all three is a failure.
+/// exactly the app whose secret is on the keychain rung below it. A store this
+/// app was never allowed to reach answers that it had nothing, so what is left
+/// is a store that refused — and saying a secret is gone while it is still
+/// there is the one answer this must never give.
 fn sweep(mut clear: impl FnMut(Rung) -> Result<bool>) -> Result<bool> {
     let mut removed = false;
-    let mut answered = false;
     let mut refusal = None;
     for rung in LADDER {
         match clear(rung) {
-            Ok(gone) => {
-                answered = true;
-                removed |= gone;
-            }
+            Ok(gone) => removed |= gone,
             Err(why) => refusal = Some(why),
         }
     }
     match refusal {
-        Some(why) if !answered => Err(why),
-        _ => Ok(removed),
+        Some(why) => Err(why),
+        None => Ok(removed),
     }
 }
 
@@ -191,12 +189,17 @@ mod enclave {
         })
     }
 
+    /// `errSecMissingEntitlement` (SecBase.h): this process is not allowed to
+    /// reach the data-protection keychain, so it never put a key there and
+    /// there is nothing of ours to remove.
+    const NEVER_ALLOWED: i32 = -34018;
+
     pub(super) fn delete(tag: &str) -> Result<bool> {
         let query = query(tag, false);
         let status = unsafe { SecItemDelete(query.as_concrete_TypeRef()) };
         if status == errSecSuccess {
             Ok(true)
-        } else if status == errSecItemNotFound {
+        } else if status == errSecItemNotFound || status == NEVER_ALLOWED {
             Ok(false)
         } else {
             Err(Error::Unavailable(NO_STORE.to_string()))
@@ -441,10 +444,12 @@ mod tests {
         assert_eq!(why.to_string(), "KeyFile said no");
     }
 
+    // The rungs below a refusal are still cleared — and the refusal is still
+    // said, because a store that refused may be holding the secret yet.
     #[test]
     fn clears_the_lower_rungs_when_the_top_one_refuses() {
         let mut swept = Vec::new();
-        let removed = sweep(|rung| {
+        let why = sweep(|rung| {
             swept.push(rung);
             match rung {
                 Rung::Enclave => Err(refused()),
@@ -452,9 +457,9 @@ mod tests {
                 Rung::KeyFile => Ok(false),
             }
         })
-        .unwrap();
-        assert!(removed);
+        .unwrap_err();
         assert_eq!(swept, vec![Rung::Enclave, Rung::Keychain, Rung::KeyFile]);
+        assert_eq!(why.to_string(), refused().to_string());
     }
 
     #[test]
@@ -462,24 +467,19 @@ mod tests {
         assert!(!sweep(|_| Ok(false)).unwrap());
     }
 
+    // A store that refused is a store that may still be holding the secret, so
+    // it is said — never reported as nothing having been there.
     #[test]
-    fn deleting_what_is_not_there_succeeds_even_past_a_refusal() {
-        let removed = sweep(|rung| {
-            if rung == Rung::Enclave {
-                Err(refused())
+    fn one_store_refusing_is_a_refusal_though_the_others_answered() {
+        let why = sweep(|rung| {
+            if rung == Rung::Keychain {
+                Err(Error::Unavailable(std::format!("{rung:?} said no")))
             } else {
                 Ok(false)
             }
         })
-        .unwrap();
-        assert!(!removed);
-    }
-
-    #[test]
-    fn reports_a_refusal_only_when_every_rung_refuses() {
-        let why =
-            sweep(|rung| Err(Error::Unavailable(std::format!("{rung:?} said no")))).unwrap_err();
-        assert_eq!(why.to_string(), "KeyFile said no");
+        .unwrap_err();
+        assert_eq!(why.to_string(), "Keychain said no");
     }
 
     #[test]
