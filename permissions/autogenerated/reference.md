@@ -7,7 +7,6 @@ crypto features are by default exposed.
 
 It allows access to all crypto commands.
 
-
 #### This default permission set includes the following:
 
 - `allow-generate`
@@ -15,6 +14,9 @@ It allows access to all crypto commands.
 - `allow-get-public-key`
 - `allow-sign-payload`
 - `allow-verify-signature`
+- `allow-seal`
+- `allow-open`
+- `allow-delete`
 
 ## Permission Table
 
@@ -24,6 +26,32 @@ It allows access to all crypto commands.
 <th>Description</th>
 </tr>
 
+
+<tr>
+<td>
+
+`crypto-hw:allow-delete`
+
+</td>
+<td>
+
+Enables the delete command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:deny-delete`
+
+</td>
+<td>
+
+Denies the delete command without any pre-configured scope.
+
+</td>
+</tr>
 
 <tr>
 <td>
@@ -99,6 +127,58 @@ Enables the get_public_key command without any pre-configured scope.
 <td>
 
 Denies the get_public_key command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:allow-open`
+
+</td>
+<td>
+
+Enables the open command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:deny-open`
+
+</td>
+<td>
+
+Denies the open command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:allow-seal`
+
+</td>
+<td>
+
+Enables the seal command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:deny-seal`
+
+</td>
+<td>
+
+Denies the seal command without any pre-configured scope.
 
 </td>
 </tr>

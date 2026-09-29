@@ -1,7 +1,10 @@
 const COMMANDS: &[&str] = &[
+    "delete",
     "exists",
     "generate",
     "get_public_key",
+    "open",
+    "seal",
     "sign_payload",
     "verify_signature",
 ];

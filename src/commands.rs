@@ -4,14 +4,6 @@ use crate::models::*;
 use crate::CryptoExt;
 use crate::Result;
 
-// #[command]
-// pub(crate) async fn ping<R: Runtime>(
-//     app: AppHandle<R>,
-//     payload: PingRequest,
-// ) -> Result<PingResponse> {
-//     app.crypto().ping(payload)
-// }
-
 #[command]
 pub(crate) async fn generate<R: Runtime>(
     app: AppHandle<R>,
@@ -50,4 +42,28 @@ pub(crate) async fn verify_signature<R: Runtime>(
     payload: VerifySignatureRequest,
 ) -> Result<VerifySignatureResponse> {
     app.crypto().verify_signature(payload)
+}
+
+#[command]
+pub(crate) async fn seal<R: Runtime>(
+    app: AppHandle<R>,
+    payload: SealRequest,
+) -> Result<SealResponse> {
+    app.crypto().seal(payload)
+}
+
+#[command]
+pub(crate) async fn open<R: Runtime>(
+    app: AppHandle<R>,
+    payload: OpenRequest,
+) -> Result<OpenResponse> {
+    app.crypto().open(payload)
+}
+
+#[command]
+pub(crate) async fn delete<R: Runtime>(
+    app: AppHandle<R>,
+    payload: IdentifierRequest,
+) -> Result<DeleteResponse> {
+    app.crypto().delete(payload)
 }
