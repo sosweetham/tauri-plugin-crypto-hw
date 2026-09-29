@@ -130,28 +130,39 @@ fn keyring_away(trouble: &ServiceError) -> bool {
     )
 }
 
+/// Runs `job` on a thread of its own, which the keyring calls need: the secret
+/// service crate blocks on a tokio runtime it keeps, and tokio panics when a
+/// thread already driving one blocks on another — which is every thread a
+/// command arrives on.
+fn off_the_async_runtime<T: Send>(job: impl FnOnce() -> Result<T> + Send) -> Result<T> {
+    std::thread::scope(|threads| {
+        threads
+            .spawn(job)
+            .join()
+            .unwrap_or_else(|_| Err(Error::Unavailable(REFUSED.to_string())))
+    })
+}
+
 /// Runs `job` against the unlocked default collection. `None` is a machine with
 /// no keyring at all, which the caller answers for itself.
-///
-/// The crate's blocking API is used rather than a runtime of ours: its zbus
-/// layer keeps its own, so these stay the plain synchronous calls the backend
-/// trait is shaped around.
-fn in_keyring<T>(job: impl FnOnce(&Collection<'_>) -> Result<T>) -> Result<Option<T>> {
-    let service = match SecretService::connect(EncryptionType::Dh) {
-        Ok(service) => service,
-        Err(trouble) if keyring_away(&trouble) => return Ok(None),
-        Err(trouble) => return Err(from_service(trouble)),
-    };
-    let collection = match service.get_default_collection() {
-        Ok(collection) => collection,
-        Err(ServiceError::NoResult) => return Ok(None),
-        Err(trouble) if keyring_away(&trouble) => return Ok(None),
-        Err(trouble) => return Err(from_service(trouble)),
-    };
-    if collection.is_locked().map_err(from_service)? {
-        collection.unlock().map_err(from_service)?;
-    }
-    job(&collection).map(Some)
+fn in_keyring<T: Send>(job: impl FnOnce(&Collection<'_>) -> Result<T> + Send) -> Result<Option<T>> {
+    off_the_async_runtime(move || {
+        let service = match SecretService::connect(EncryptionType::Dh) {
+            Ok(service) => service,
+            Err(trouble) if keyring_away(&trouble) => return Ok(None),
+            Err(trouble) => return Err(from_service(trouble)),
+        };
+        let collection = match service.get_default_collection() {
+            Ok(collection) => collection,
+            Err(ServiceError::NoResult) => return Ok(None),
+            Err(trouble) if keyring_away(&trouble) => return Ok(None),
+            Err(trouble) => return Err(from_service(trouble)),
+        };
+        if collection.is_locked().map_err(from_service)? {
+            collection.unlock().map_err(from_service)?;
+        }
+        job(&collection).map(Some)
+    })
 }
 
 /// What to do when the keyring holds no key for this name.
@@ -255,6 +266,13 @@ mod tests {
         assert_eq!(from_service(ServiceError::Locked).to_string(), LOCKED);
         assert_eq!(from_service(ServiceError::Prompt).to_string(), LOCKED);
         assert_eq!(from_service(ServiceError::NoResult).to_string(), REFUSED);
+    }
+
+    #[test]
+    fn speaks_to_the_keyring_away_from_the_caller_s_thread() {
+        let here = std::thread::current().id();
+        let there = off_the_async_runtime(|| Ok(std::thread::current().id())).unwrap();
+        assert_ne!(here, there);
     }
 
     #[test]
