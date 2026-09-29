@@ -5,6 +5,7 @@ import {
 	exists,
 	getPublicKey,
 } from "@auvo/tauri-plugin-crypto-hw-api";
+import Seal from "./lib/Seal.svelte";
 import Sign from "./lib/Sign.svelte";
 import Verify from "./lib/Verify.svelte";
 
@@ -79,6 +80,7 @@ async function _getPublicKey() {
 
     <Sign />
     <Verify />
+    <Seal />
 
 </main>
 

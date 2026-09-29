@@ -2,13 +2,23 @@
 
 This project is a Tauri plugin which allows for hardware KeyStore (Secure Enclave (iOS) & StrongBox (Android)) control and management on iOS and Android devices with a consistent API.
 
-| Platform | Supported |
-| -------- | --------- |
-| Linux    | x         |
-| Windows  | x         |
-| macOS    | x         |
-| Android  | ✓         |
-| iOS      | ✓         |
+It also keeps secrets: `seal` turns a piece of text into one opaque string that only the same device can read back, and `open` reads it. Every answer says what is holding the key it used.
+
+| Platform | Sign & verify | Seal & open |
+| -------- | ------------- | ----------- |
+| Linux    | x             | landing     |
+| Windows  | x             | landing     |
+| macOS    | x             | landing     |
+| Android  | ✓             | ✓           |
+| iOS      | ✓             | ✓           |
+
+`backing`, on every `seal` and `open`, says where the key lives:
+
+- `hardware` — a key that never leaves a secure element, TPM, StrongBox or Secure Enclave.
+- `system` — the operating system's own protected store, bound to this user on this device.
+- `software` — a key file under the app's data directory.
+
+A sealed string is `<scheme>:<base64url-without-padding>` — one opaque string, safe to store or send anywhere, readable only by `open` on the device that sealed it.
 
 ## API
 
@@ -79,6 +89,27 @@ async function verifySignature() {
 }
 ```
 
+```ts
+import { seal } from "@auvo/tauri-plugin-crypto-hw-api";
+// Keeps a piece of text under a name. The promise rejects if this device
+// cannot keep a secret.
+const { sealed, backing } = await seal("default", "hunter2");
+```
+
+```ts
+import { open } from "@auvo/tauri-plugin-crypto-hw-api";
+// Reads a sealed string back. The promise rejects if nothing is kept under
+// that name, or if the string was sealed on another device.
+const { plaintext, backing } = await open("default", sealed);
+```
+
+```ts
+import { remove } from "@auvo/tauri-plugin-crypto-hw-api";
+// Removes the sealing key, so nothing sealed with it opens again. Removing a
+// name nothing is kept under resolves to false.
+const removed = await remove("default");
+```
+
 ### Default Permission
 
 This permission set configures which
@@ -86,7 +117,7 @@ crypto features are by default exposed.
 
 ##### Granted Permissions
 
-**crypto-hw:default**: It allows access to all crypto commands.
+It allows access to all crypto commands.
 
 ##### This default permission set includes the following:
 
@@ -95,6 +126,9 @@ crypto features are by default exposed.
 - `allow-get-public-key`
 - `allow-sign-payload`
 - `allow-verify-signature`
+- `allow-seal`
+- `allow-open`
+- `allow-delete`
 
 ### Permission Table
 
@@ -102,6 +136,33 @@ crypto features are by default exposed.
 <tr>
 <th>Identifier</th>
 <th>Description</th>
+</tr>
+
+
+<tr>
+<td>
+
+`crypto-hw:allow-delete`
+
+</td>
+<td>
+
+Enables the delete command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:deny-delete`
+
+</td>
+<td>
+
+Denies the delete command without any pre-configured scope.
+
+</td>
 </tr>
 
 <tr>
@@ -178,6 +239,58 @@ Enables the get_public_key command without any pre-configured scope.
 <td>
 
 Denies the get_public_key command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:allow-open`
+
+</td>
+<td>
+
+Enables the open command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:deny-open`
+
+</td>
+<td>
+
+Denies the open command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:allow-seal`
+
+</td>
+<td>
+
+Enables the seal command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`crypto-hw:deny-seal`
+
+</td>
+<td>
+
+Denies the seal command without any pre-configured scope.
 
 </td>
 </tr>
