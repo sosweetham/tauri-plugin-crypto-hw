@@ -322,15 +322,13 @@ class CryptoPlugin(private val activity: Activity): Plugin(activity) {
             ?: return invoke.reject("Missing identifier")
         try {
             val ks = keyStore()
-            var deleted = false
-            // An identifier names both keys made under it: the one it seals with, and the
-            // one `generate` signs with.
-            for (entry in listOf(sealAlias(id), alias(id))) {
-                if (ks.containsAlias(entry)) {
-                    ks.deleteEntry(entry)
-                    deleted = true
-                }
-            }
+            val seal = sealAlias(id)
+            val deleted = ks.containsAlias(seal)
+            if (deleted) ks.deleteEntry(seal)
+            // The signing key `generate` made under the same identifier goes too, but the
+            // answer is about the secret alone: a caller reads it as "a secret was removed".
+            val signing = alias(id)
+            if (ks.containsAlias(signing)) ks.deleteEntry(signing)
             invoke.resolve(JSObject().apply { put("deleted", deleted) })
         } catch (failed: Exception) {
             invoke.reject(NOT_REMOVED)
