@@ -4,13 +4,13 @@ This project is a Tauri plugin which allows for hardware KeyStore (Secure Enclav
 
 It also keeps secrets: `seal` turns a piece of text into one opaque string that only the same device can read back, and `open` reads it. Every answer says what is holding the key it used.
 
-| Platform | Sign & verify | Seal & open |
-| -------- | ------------- | ----------- |
-| Linux    | x             | landing     |
-| Windows  | x             | landing     |
-| macOS    | x             | landing     |
-| Android  | ✓             | landing     |
-| iOS      | ✓             | landing     |
+| Platform | Sign & verify | Seal & open | What holds the key                                 |
+| -------- | ------------- | ----------- | -------------------------------------------------- |
+| Linux    | x             | ✓           | the keyring, else a key file                       |
+| Windows  | x             | ✓           | the TPM, else the system's own protection          |
+| macOS    | x             | ✓           | the Secure Enclave, else the keychain, else a file |
+| Android  | ✓             | ✓           | StrongBox where the phone has it, else the keystore |
+| iOS      | ✓             | ✓           | the Secure Enclave                                 |
 
 `backing`, on every `seal` and `open`, says where the key lives:
 
