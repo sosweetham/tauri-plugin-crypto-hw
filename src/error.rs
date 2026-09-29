@@ -4,7 +4,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error(transparent)]
+    /// The person reads this, so the system's own words stay out of it.
+    #[error("This device would not let the app keep or read that. Try again.")]
     Io(#[from] std::io::Error),
     #[cfg(mobile)]
     #[error(transparent)]

@@ -13,6 +13,7 @@ mod mobile;
 mod commands;
 mod error;
 mod models;
+#[cfg(desktop)]
 mod sealed;
 
 pub use error::{Error, Result};

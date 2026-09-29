@@ -9,8 +9,8 @@ It also keeps secrets: `seal` turns a piece of text into one opaque string that 
 | Linux    | x             | landing     |
 | Windows  | x             | landing     |
 | macOS    | x             | landing     |
-| Android  | ✓             | ✓           |
-| iOS      | ✓             | ✓           |
+| Android  | ✓             | landing     |
+| iOS      | ✓             | landing     |
 
 `backing`, on every `seal` and `open`, says where the key lives:
 

@@ -65,7 +65,7 @@ pub enum Backing {
     Software,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[derive(Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SealRequest {
     pub identifier: String,
@@ -86,7 +86,7 @@ pub struct OpenRequest {
     pub sealed: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenResponse {
     pub plaintext: String,
@@ -97,4 +97,23 @@ pub struct OpenResponse {
 #[serde(rename_all = "camelCase")]
 pub struct DeleteResponse {
     pub deleted: bool,
+}
+
+// The secret never reaches a log: these print everything but it.
+impl std::fmt::Debug for SealRequest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SealRequest")
+            .field("identifier", &self.identifier)
+            .field("plaintext", &"<elided>")
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for OpenResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OpenResponse")
+            .field("plaintext", &"<elided>")
+            .field("backing", &self.backing)
+            .finish()
+    }
 }

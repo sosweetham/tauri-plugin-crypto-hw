@@ -127,17 +127,24 @@ fn load_or_create_key(dir: &Path, identifier: &str) -> Result<Zeroizing<[u8; KEY
 
     let mut key = Zeroizing::new([0u8; KEY_LEN]);
     OsRng.fill_bytes(key.as_mut_slice());
-    write_key(&path, key.as_slice())?;
-    Ok(key)
+    match write_key(&path, key.as_slice()) {
+        Ok(()) => Ok(key),
+        // Another seal of the same name got there first, and its key is the one.
+        Err(Error::Io(trouble)) if trouble.kind() == std::io::ErrorKind::AlreadyExists => {
+            read_key(&path)
+        }
+        Err(trouble) => Err(trouble),
+    }
 }
 
 fn read_key(path: &Path) -> Result<Zeroizing<[u8; KEY_LEN]>> {
     let bytes = Zeroizing::new(fs::read(path)?);
-    let key: [u8; KEY_LEN] = bytes
-        .as_slice()
-        .try_into()
-        .map_err(|_| Error::Crypto(DAMAGED_KEY.to_string()))?;
-    Ok(Zeroizing::new(key))
+    if bytes.len() != KEY_LEN {
+        return Err(Error::Crypto(DAMAGED_KEY.to_string()));
+    }
+    let mut key = Zeroizing::new([0u8; KEY_LEN]);
+    key.copy_from_slice(&bytes);
+    Ok(key)
 }
 
 #[cfg(unix)]
