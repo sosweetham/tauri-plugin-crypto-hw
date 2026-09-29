@@ -120,3 +120,91 @@ export async function verifySignature(
 		},
 	}).then((r) => r.valid);
 }
+
+/**
+ * What is holding the key a secret was sealed under.
+ *
+ * - `hardware` — a key that never leaves a secure element, TPM, StrongBox or Secure Enclave.
+ * - `system` — the operating system's own protected store, bound to this user on this device.
+ * - `software` — a key file under the app's data directory.
+ */
+export type Backing = "hardware" | "system" | "software";
+
+/**
+ * @author SoSweetHam <soham@auvo.io>
+ * @param identifier - The name to keep this secret under
+ * @param plaintext - The text to keep
+ * @returns The sealed string, and what is holding the key it was sealed under
+ * @description
+ * Seals a piece of text so that only this device can read it back. The sealing key is created the first time the identifier is used, and is separate from the signing key `generate` makes under the same identifier. The sealed string is `<scheme>:<base64url>` and is safe to store or send anywhere; only `open` on this device can turn it back into text.
+ * @example
+ * ```ts
+ * import { seal } from '@auvo/tauri-plugin-crypto-hw-api'
+ * const { sealed, backing } = await seal('my-secret-id', 'hunter2');
+ * console.log(sealed, backing); // "ecies-p256:BFq...", "hardware"
+ * ```
+ */
+export async function seal(
+	identifier: string,
+	plaintext: string,
+): Promise<{ sealed: string; backing: Backing }> {
+	return await invoke<{ sealed: string; backing: Backing }>(
+		"plugin:crypto-hw|seal",
+		{
+			payload: {
+				identifier,
+				plaintext,
+			},
+		},
+	);
+}
+
+/**
+ * @author SoSweetHam <soham@auvo.io>
+ * @param identifier - The name the secret was sealed under
+ * @param sealed - The string `seal` returned
+ * @returns The text, and what is holding the key it was sealed under
+ * @description
+ * Reads a sealed string back as text. The promise rejects if nothing is kept under that identifier, or if the string was sealed on another device or in another way.
+ * @example
+ * ```ts
+ * import { open } from '@auvo/tauri-plugin-crypto-hw-api'
+ * const { plaintext } = await open('my-secret-id', sealed);
+ * console.log(plaintext); // "hunter2"
+ * ```
+ */
+export async function open(
+	identifier: string,
+	sealed: string,
+): Promise<{ plaintext: string; backing: Backing }> {
+	return await invoke<{ plaintext: string; backing: Backing }>(
+		"plugin:crypto-hw|open",
+		{
+			payload: {
+				identifier,
+				sealed,
+			},
+		},
+	);
+}
+
+/**
+ * @author SoSweetHam <soham@auvo.io>
+ * @param identifier - The name the secret was sealed under
+ * @returns Whether there was a sealing key to remove
+ * @description
+ * Removes the sealing key kept under this identifier, so anything sealed with it can no longer be opened. Removing a name nothing is kept under succeeds and resolves to false.
+ * @example
+ * ```ts
+ * import { remove } from '@auvo/tauri-plugin-crypto-hw-api'
+ * const removed = await remove('my-secret-id');
+ * console.log(removed); // true or false
+ * ```
+ */
+export async function remove(identifier: string): Promise<boolean> {
+	return await invoke<{ deleted: boolean }>("plugin:crypto-hw|delete", {
+		payload: {
+			identifier,
+		},
+	}).then((r) => r.deleted);
+}
