@@ -92,10 +92,11 @@ pub(crate) fn open<R: Runtime>(
 
 pub(crate) fn delete<R: Runtime>(app: &AppHandle<R>, identifier: &str) -> Result<bool> {
     let tag = seal_tag(app, identifier);
-    let from_enclave = enclave::delete(&tag)?;
-    let from_keychain = keychain::delete(&tag)?;
-    let from_key_file = software::delete(app, identifier)?;
-    Ok(from_enclave || from_keychain || from_key_file)
+    sweep(|rung| match rung {
+        Rung::Enclave => enclave::delete(&tag),
+        Rung::Keychain => keychain::delete(&tag),
+        Rung::KeyFile => software::delete(app, identifier),
+    })
 }
 
 /// Takes the first rung that answers, and reports the last refusal if none does.
@@ -108,6 +109,29 @@ fn descend<T>(mut attempt: impl FnMut(Rung) -> Result<T>) -> Result<T> {
         }
     }
     Err(refusal.unwrap_or_else(|| Error::Unavailable(NO_STORE.to_string())))
+}
+
+/// Clears every rung, because a secret sealed on a low rung outlives a refusal
+/// from a high one: an app that cannot reach the Secure Enclave at all is
+/// exactly the app whose secret is on the keychain rung below it. Nothing being
+/// there is success, so only a refusal from all three is a failure.
+fn sweep(mut clear: impl FnMut(Rung) -> Result<bool>) -> Result<bool> {
+    let mut removed = false;
+    let mut answered = false;
+    let mut refusal = None;
+    for rung in LADDER {
+        match clear(rung) {
+            Ok(gone) => {
+                answered = true;
+                removed |= gone;
+            }
+            Err(why) => refusal = Some(why),
+        }
+    }
+    match refusal {
+        Some(why) if !answered => Err(why),
+        _ => Ok(removed),
+    }
 }
 
 fn rung_that_wrote(scheme: &str) -> Option<Rung> {
@@ -414,6 +438,47 @@ mod tests {
         })
         .unwrap_err();
         assert_eq!(tried, vec![Rung::Enclave, Rung::Keychain, Rung::KeyFile]);
+        assert_eq!(why.to_string(), "KeyFile said no");
+    }
+
+    #[test]
+    fn clears_the_lower_rungs_when_the_top_one_refuses() {
+        let mut swept = Vec::new();
+        let removed = sweep(|rung| {
+            swept.push(rung);
+            match rung {
+                Rung::Enclave => Err(refused()),
+                Rung::Keychain => Ok(true),
+                Rung::KeyFile => Ok(false),
+            }
+        })
+        .unwrap();
+        assert!(removed);
+        assert_eq!(swept, vec![Rung::Enclave, Rung::Keychain, Rung::KeyFile]);
+    }
+
+    #[test]
+    fn deleting_what_is_not_there_succeeds() {
+        assert!(!sweep(|_| Ok(false)).unwrap());
+    }
+
+    #[test]
+    fn deleting_what_is_not_there_succeeds_even_past_a_refusal() {
+        let removed = sweep(|rung| {
+            if rung == Rung::Enclave {
+                Err(refused())
+            } else {
+                Ok(false)
+            }
+        })
+        .unwrap();
+        assert!(!removed);
+    }
+
+    #[test]
+    fn reports_a_refusal_only_when_every_rung_refuses() {
+        let why =
+            sweep(|rung| Err(Error::Unavailable(std::format!("{rung:?} said no")))).unwrap_err();
         assert_eq!(why.to_string(), "KeyFile said no");
     }
 
