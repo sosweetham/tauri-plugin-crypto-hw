@@ -17,6 +17,28 @@ links = "tauri-plugin-crypto-hw"
 tauri = { version = "2.5.0" }
 serde = "1.0"
 thiserror = "2"
+base64 = "0.22"
+aes-gcm = "0.10"
+rand = "0.8"
+zeroize = { version = "1", features = ["zeroize_derive"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "3"
+security-framework-sys = "2"
+core-foundation = "0.10"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Security_Cryptography",
+    "Win32_Foundation",
+    "Win32_System_Memory",
+] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+secret-service = { version = "5", features = ["rt-tokio-crypto-rust"] }
+
+[dev-dependencies]
+tempfile = "3"
 
 [build-dependencies]
 tauri-plugin = { version = "2.2.0", features = ["build"] }
