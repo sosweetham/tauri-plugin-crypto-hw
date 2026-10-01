@@ -13,6 +13,8 @@ mod mobile;
 mod commands;
 mod error;
 mod models;
+#[cfg(desktop)]
+mod sealed;
 
 pub use error::{Error, Result};
 
@@ -41,6 +43,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::get_public_key,
             commands::sign_payload,
             commands::verify_signature,
+            commands::seal,
+            commands::open,
+            commands::delete,
         ])
         .setup(|app, api| {
             #[cfg(mobile)]

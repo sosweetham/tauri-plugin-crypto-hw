@@ -25,11 +25,6 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Crypto<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Crypto<R> {
-    // pub fn ping(&self, payload: PingRequest) -> crate::Result<PingResponse> {
-    //     self.0
-    //         .run_mobile_plugin("ping", payload)
-    //         .map_err(Into::into)
-    // }
     pub fn generate(&self, payload: IdentifierRequest) -> crate::Result<GenerateResponse> {
         self.0
             .run_mobile_plugin("generate", payload)
@@ -59,6 +54,22 @@ impl<R: Runtime> Crypto<R> {
     ) -> crate::Result<VerifySignatureResponse> {
         self.0
             .run_mobile_plugin("verifySignature", payload)
+            .map_err(Into::into)
+    }
+
+    pub fn seal(&self, payload: SealRequest) -> crate::Result<SealResponse> {
+        self.0
+            .run_mobile_plugin("seal", payload)
+            .map_err(Into::into)
+    }
+    pub fn open(&self, payload: OpenRequest) -> crate::Result<OpenResponse> {
+        self.0
+            .run_mobile_plugin("open", payload)
+            .map_err(Into::into)
+    }
+    pub fn delete(&self, payload: IdentifierRequest) -> crate::Result<DeleteResponse> {
+        self.0
+            .run_mobile_plugin("delete", payload)
             .map_err(Into::into)
     }
 }

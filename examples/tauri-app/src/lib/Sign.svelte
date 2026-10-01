@@ -1,5 +1,5 @@
 <script>
-import { signPayload } from "@auvo/tauri-plugin-crypto-hw-api";
+import { signPayload } from "@sosweetham/tauri-plugin-crypto-hw-api";
 
 let payload = $state("");
 let signature = $state("");

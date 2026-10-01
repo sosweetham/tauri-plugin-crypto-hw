@@ -1,15 +1,15 @@
 [package]
 name = "tauri-plugin-crypto-hw"
-version = "0.1.0"
-authors = [ "SoSweetHam <soham@auvo.io>" ]
+version = "0.2.0"
+authors = [ "SoSweetHam <sosweetham@gmail.com>" ]
 license = "MIT"
 description = "Android/iOS StrongBox/Secure Enclave Bindings+Wrapper for Tauri"
-homepage = "https://auvo.io"
-repository = "https://github.com/auvoid/tauri-plugin-crypto-hw"
+homepage = "https://github.com/sosweetham/tauri-plugin-crypto-hw"
+repository = "https://github.com/sosweetham/tauri-plugin-crypto-hw"
 readme = "README.md"
 keywords = ["tauri", "crypto", "tpm", "strongbox", "secure-enclave"]
 edition = "2021"
-rust-version = "1.77.2"
+rust-version = "1.87.0"
 exclude = ["/examples", "/dist-js", "/guest-js", "/node_modules"]
 links = "tauri-plugin-crypto-hw"
 
@@ -17,6 +17,28 @@ links = "tauri-plugin-crypto-hw"
 tauri = { version = "2.5.0" }
 serde = "1.0"
 thiserror = "2"
+base64 = "0.22"
+aes-gcm = "0.10"
+rand = "0.8"
+zeroize = { version = "1", features = ["zeroize_derive"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "3"
+security-framework-sys = "2"
+core-foundation = "0.10"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Security_Cryptography",
+    "Win32_Foundation",
+    "Win32_System_Memory",
+] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+secret-service = { version = "5", features = ["rt-tokio-crypto-rust"] }
+
+[dev-dependencies]
+tempfile = "3"
 
 [build-dependencies]
 tauri-plugin = { version = "2.2.0", features = ["build"] }

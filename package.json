@@ -1,7 +1,7 @@
 {
-  "name": "@auvo/tauri-plugin-crypto-hw-api",
-  "version": "0.1.0",
-  "author": "SoSweetHam <soham@auvo.io>",
+  "name": "@sosweetham/tauri-plugin-crypto-hw-api",
+  "version": "0.2.0",
+  "author": "SoSweetHam <sosweetham@gmail.com>",
   "description": "Android/iOS StrongBox/Secure Enclave Bindings+Wrapper for Tauri.",
   "type": "module",
   "types": "./dist-js/index.d.ts",
@@ -19,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/auvoid/tauri-plugin-crypto-hw"
+    "url": "git+https://github.com/sosweetham/tauri-plugin-crypto-hw"
   },
   "keywords": [
     "tauri",
@@ -38,17 +38,17 @@
     "prepublishOnly": "pnpm build",
     "pretest": "pnpm build",
     "lint": "pnpm biome lint --write ./guest-js",
-    "lint-all": "pnpm -F @auvo/* lint",
-    "check-lint-all": "pnpm -F @auvo/* check-lint",
+    "lint-all": "pnpm -F @sosweetham/* lint",
+    "check-lint-all": "pnpm -F @sosweetham/* check-lint",
     "check-lint": "pnpm biome lint ./guest-js",
     "format": "pnpm biome format --write ./guest-js",
     "check-format": "pnpm biome format ./guest-js",
-    "format-all": "pnpm -F @auvo/* format",
-    "check-format-all": "pnpm -F @auvo/* check-format",
+    "format-all": "pnpm -F @sosweetham/* format",
+    "check-format-all": "pnpm -F @sosweetham/* check-format",
     "check": "pnpm biome check --write ./guest-js",
-    "check-all": "pnpm -F @auvo/* check",
+    "check-all": "pnpm -F @sosweetham/* check",
     "check-types": "tsc --noEmit",
-    "check-types-all": "pnpm -F @auvo/* check-types"
+    "check-types-all": "pnpm -F @sosweetham/* check-types"
   },
   "dependencies": {
     "@tauri-apps/api": ">=2.0.0-beta.6"

@@ -1,5 +1,5 @@
 {
-  "name": "@auvo/tauri-app",
+  "name": "@sosweetham/tauri-app",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
-    "@auvo/tauri-plugin-crypto-hw-api": "link:../.."
+    "@sosweetham/tauri-plugin-crypto-hw-api": "link:../.."
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
