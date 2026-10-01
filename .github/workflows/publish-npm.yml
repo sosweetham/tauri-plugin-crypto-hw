@@ -1,10 +1,19 @@
 name: Publish Package to npmjs
 
-# Cutting a GitHub release publishes both halves of this plugin: the npm package
-# here and the crate in publish-crate.yml. Everything is configured except the
-# token, which is a repository secret named NPM_TOKEN. The token needs publish
-# rights on the @sosweetham scope, and the first publish under a new scope is
-# what --access public is for.
+# Publishes on a released tag, with no npm token anywhere. The job authenticates
+# with the id-token permission below, which npm trades for a short-lived
+# credential, so nothing long-lived is stored in this repository.
+#
+# It only works once npm knows to trust this workflow, and npm can only be told
+# that about a package that already exists. So, once, in this order:
+#
+#   1. From a clean checkout of main: `npm login` then `npm publish --access public`
+#   2. On https://www.npmjs.com/package/@sosweetham/tauri-plugin-crypto-hw-api/access
+#      add a trusted publisher: user `sosweetham`, repository
+#      `tauri-plugin-crypto-hw`, workflow `publish-npm.yml`, environment blank.
+#
+# After that every release publishes by itself, and `--access public` is the
+# no-op it should be because the package is already public.
 on:
   workflow_dispatch:
   release:
@@ -15,12 +24,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      # Provenance is signed with this, not with the npm token.
+      # This is the credential. Leave the environment blank on npm's side to
+      # match a job that declares none, or the two will not agree.
       id-token: write
     steps:
       - uses: actions/checkout@v4
 
-      # Reads the version out of package.json's packageManager field, so the
+      # Reads the version from package.json's packageManager field, so the
       # lockfile --frozen-lockfile checks is the one it was written by.
       - uses: pnpm/action-setup@v4
 
@@ -29,10 +39,15 @@ jobs:
           node-version: "22.x"
           registry-url: "https://registry.npmjs.org"
 
+      # Trusted publishing wants npm 11.5.1 or newer, which is ahead of what
+      # Node 22 ships with.
+      - name: Take an npm that can publish this way
+        run: npm install -g npm@latest
+
       - run: pnpm install --frozen-lockfile
 
-      # prepublishOnly builds dist-js, which is the whole of what ships.
-      # --no-git-checks because a release runs on a tag rather than a branch.
-      - run: pnpm publish --provenance --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: pnpm build
+
+      # No token, and no --provenance: publishing this way attaches provenance
+      # on its own.
+      - run: npm publish --access public
