@@ -10,7 +10,7 @@ readme = "README.md"
 keywords = ["tauri", "crypto", "tpm", "strongbox", "secure-enclave"]
 edition = "2021"
 rust-version = "1.87.0"
-exclude = ["/examples", "/dist-js", "/guest-js", "/node_modules"]
+exclude = ["/examples", "/dist-js", "/guest-js", "/node_modules", "/android/.gradle", "/android/build", "/ios/.build"]
 links = "tauri-plugin-crypto-hw"
 
 [dependencies]

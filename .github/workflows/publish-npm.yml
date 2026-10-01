@@ -1,22 +1,38 @@
 name: Publish Package to npmjs
+
+# Cutting a GitHub release publishes both halves of this plugin: the npm package
+# here and the crate in publish-crate.yml. Everything is configured except the
+# token, which is a repository secret named NPM_TOKEN. The token needs publish
+# rights on the @sosweetham scope, and the first publish under a new scope is
+# what --access public is for.
 on:
   workflow_dispatch:
   release:
     types: [published]
+
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # Provenance is signed with this, not with the npm token.
       id-token: write
     steps:
       - uses: actions/checkout@v4
+
+      # Reads the version out of package.json's packageManager field, so the
+      # lockfile --frozen-lockfile checks is the one it was written by.
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           registry-url: "https://registry.npmjs.org"
-      - run: npm i -g pnpm
+
       - run: pnpm install --frozen-lockfile
-      - run: pnpm publish --provenance --access public --no-git-checks # no git checks so that it can be run from a release
+
+      # prepublishOnly builds dist-js, which is the whole of what ships.
+      # --no-git-checks because a release runs on a tag rather than a branch.
+      - run: pnpm publish --provenance --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

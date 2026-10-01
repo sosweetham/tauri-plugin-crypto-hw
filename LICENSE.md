@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 
-Copyright © `2025` `AuvoDigital OÜ`
+Copyright © `2025` `SoSweetHam`
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

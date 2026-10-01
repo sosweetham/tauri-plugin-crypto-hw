@@ -1,2 +1,5 @@
 /build
 /.tauri
+# Gradle's own cache for this checkout. It was committed once and shipped
+# 8.5 MB of it inside the crate; crates.io allows 10 MB in total.
+/.gradle
