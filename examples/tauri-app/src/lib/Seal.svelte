@@ -1,5 +1,5 @@
 <script>
-import { open, remove, seal } from "@auvo/tauri-plugin-crypto-hw-api";
+import { open, remove, seal } from "@sosweetham/tauri-plugin-crypto-hw-api";
 
 let identifier = $state("default");
 let plaintext = $state("");

@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@auvo/tauri-plugin-crypto-hw-api':
+      '@sosweetham/tauri-plugin-crypto-hw-api':
         specifier: link:../..
         version: link:../..
       '@tauri-apps/api':

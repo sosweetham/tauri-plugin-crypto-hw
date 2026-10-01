@@ -25,7 +25,7 @@ A sealed string is `<scheme>:<base64url-without-padding>` — one opaque string,
 ### Available Commands
 
 ```ts
-import { generate } from "@auvo/tauri-plugin-crypto-hw-api";
+import { generate } from "@sosweetham/tauri-plugin-crypto-hw-api";
 async function generate() {
   generate("default")
     .then((returnValue) => {
@@ -38,7 +38,7 @@ async function generate() {
 ```
 
 ```ts
-import { exists } from "@auvo/tauri-plugin-crypto-hw-api";
+import { exists } from "@sosweetham/tauri-plugin-crypto-hw-api";
 async function exists() {
   exists("default")
     .then((returnValue) => {
@@ -51,7 +51,7 @@ async function exists() {
 ```
 
 ```ts
-import { getPublicKey } from "@auvo/tauri-plugin-crypto-hw-api";
+import { getPublicKey } from "@sosweetham/tauri-plugin-crypto-hw-api";
 async function getPublicKey() {
   getPublicKey("default")
     .then((returnValue) => {
@@ -64,7 +64,7 @@ async function getPublicKey() {
 ```
 
 ```ts
-import { signPayload } from "@auvo/tauri-plugin-crypto-hw-api";
+import { signPayload } from "@sosweetham/tauri-plugin-crypto-hw-api";
 async function signPayload() {
   signPayload("default")
     .then((returnValue) => {
@@ -77,7 +77,7 @@ async function signPayload() {
 ```
 
 ```ts
-import { verifySignature } from "@auvo/tauri-plugin-crypto-hw-api";
+import { verifySignature } from "@sosweetham/tauri-plugin-crypto-hw-api";
 async function verifySignature() {
   verifySignature("default")
     .then((returnValue) => {
@@ -90,21 +90,21 @@ async function verifySignature() {
 ```
 
 ```ts
-import { seal } from "@auvo/tauri-plugin-crypto-hw-api";
+import { seal } from "@sosweetham/tauri-plugin-crypto-hw-api";
 // Keeps a piece of text under a name. The promise rejects if this device
 // cannot keep a secret.
 const { sealed, backing } = await seal("default", "hunter2");
 ```
 
 ```ts
-import { open } from "@auvo/tauri-plugin-crypto-hw-api";
+import { open } from "@sosweetham/tauri-plugin-crypto-hw-api";
 // Reads a sealed string back. The promise rejects if nothing is kept under
 // that name, or if the string was sealed on another device.
 const { plaintext, backing } = await open("default", sealed);
 ```
 
 ```ts
-import { remove } from "@auvo/tauri-plugin-crypto-hw-api";
+import { remove } from "@sosweetham/tauri-plugin-crypto-hw-api";
 // Removes the sealing key, so nothing sealed with it opens again. Removing a
 // name nothing is kept under resolves to false.
 const removed = await remove("default");
