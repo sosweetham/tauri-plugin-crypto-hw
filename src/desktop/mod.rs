@@ -46,38 +46,36 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 /// Access to the crypto APIs.
 pub struct Crypto<R: Runtime>(AppHandle<R>);
 
+/// Said to anybody asking a desktop to sign. A signing key here would be a
+/// different key in a different store from the one a phone holds, so there is
+/// nothing to answer with and nothing a caller could do to make there be.
+const NO_SIGNING: &str = "Signing keys are kept on phones and tablets, not on this device.";
+
+fn unsigned<T>() -> crate::Result<T> {
+    Err(crate::Error::Unavailable(NO_SIGNING.to_string()))
+}
+
 impl<R: Runtime> Crypto<R> {
-    pub fn generate(&self, payload: IdentifierRequest) -> crate::Result<GenerateResponse> {
-        Ok(GenerateResponse {
-            message: format!("Generated identifier: {}", payload.identifier),
-        })
+    pub fn generate(&self, _payload: IdentifierRequest) -> crate::Result<GenerateResponse> {
+        unsigned()
     }
-    pub fn exists(&self, payload: IdentifierRequest) -> crate::Result<ExistsResponse> {
-        Ok(ExistsResponse {
-            exists: payload.identifier == "exists",
-        })
+    pub fn exists(&self, _payload: IdentifierRequest) -> crate::Result<ExistsResponse> {
+        unsigned()
     }
     pub fn get_public_key(
         &self,
-        payload: IdentifierRequest,
+        _payload: IdentifierRequest,
     ) -> crate::Result<GetPublicKeyResponse> {
-        Ok(GetPublicKeyResponse {
-            public_key: payload.identifier,
-        })
+        unsigned()
     }
-    pub fn sign_payload(&self, payload: SignPayloadRequest) -> crate::Result<SignPayloadResponse> {
-        Ok(SignPayloadResponse {
-            signature: format!("Signature for {}: {}", payload.identifier, payload.payload),
-        })
+    pub fn sign_payload(&self, _payload: SignPayloadRequest) -> crate::Result<SignPayloadResponse> {
+        unsigned()
     }
     pub fn verify_signature(
         &self,
-        payload: VerifySignatureRequest,
+        _payload: VerifySignatureRequest,
     ) -> crate::Result<VerifySignatureResponse> {
-        Ok(VerifySignatureResponse {
-            valid: payload.signature
-                == format!("Signature for {}: {}", payload.identifier, payload.payload),
-        })
+        unsigned()
     }
 
     pub fn seal(&self, payload: SealRequest) -> crate::Result<SealResponse> {
@@ -99,5 +97,43 @@ impl<R: Runtime> Crypto<R> {
         Ok(DeleteResponse {
             deleted: backend::delete(&self.0, &payload.identifier)?,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A desktop answering a signing call with something that looks like a
+    /// signature is worse than one that cannot sign: a caller believes it.
+    #[test]
+    fn a_desktop_refuses_to_sign_rather_than_answering_with_anything() {
+        let said = |e: crate::Error| e.to_string();
+
+        assert_eq!(
+            said(unsigned::<GenerateResponse>().unwrap_err()),
+            NO_SIGNING
+        );
+        assert_eq!(said(unsigned::<ExistsResponse>().unwrap_err()), NO_SIGNING);
+        assert_eq!(
+            said(unsigned::<GetPublicKeyResponse>().unwrap_err()),
+            NO_SIGNING
+        );
+        assert_eq!(
+            said(unsigned::<SignPayloadResponse>().unwrap_err()),
+            NO_SIGNING
+        );
+        assert_eq!(
+            said(unsigned::<VerifySignatureResponse>().unwrap_err()),
+            NO_SIGNING
+        );
+    }
+
+    #[test]
+    fn what_a_desktop_cannot_do_is_told_apart_from_what_went_wrong() {
+        assert!(matches!(
+            unsigned::<ExistsResponse>().unwrap_err(),
+            crate::Error::Unavailable(_)
+        ));
     }
 }

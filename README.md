@@ -12,6 +12,10 @@ It also keeps secrets: `seal` turns a piece of text into one opaque string that 
 | Android  | ✓             | ✓           | StrongBox where the phone has it, else the keystore |
 | iOS      | ✓             | ✓           | the Secure Enclave                                 |
 
+An `x` means the call is refused on that platform rather than answered. `generate`, `exists`,
+`getPublicKey`, `signPayload` and `verifySignature` reject on a desktop, saying signing keys are
+kept on phones and tablets. Sealing works everywhere.
+
 `backing`, on every `seal` and `open`, says where the key lives:
 
 - `hardware` — a key that never leaves a secure element, TPM, StrongBox or Secure Enclave.
